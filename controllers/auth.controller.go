@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/Llane00/ramen-backend/models"
 	"github.com/Llane00/ramen-backend/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/thanhpk/randstr"
 	"gorm.io/gorm"
 )
 
@@ -47,7 +49,7 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		Email:     strings.ToLower(payload.Email),
 		Password:  hashedPassword,
 		Role:      "user",
-		Verified:  true,
+		Verified:  false,
 		Photo:     payload.Photo,
 		Provider:  "local",
 		CreatedAt: now,
@@ -64,17 +66,45 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		return
 	}
 
-	userResponse := &models.UserResponse{
-		ID:        newUser.ID,
-		Name:      newUser.Name,
-		Email:     newUser.Email,
-		Photo:     newUser.Photo,
-		Role:      newUser.Role,
-		Provider:  newUser.Provider,
-		CreatedAt: newUser.CreatedAt,
-		UpdatedAt: newUser.UpdatedAt,
+	config, _ := initializers.LoadConfig(".")
+
+	// Generate Verification Code
+	code := randstr.String(20)
+
+	verification_code := utils.Encode(code)
+
+	// Update User in Database
+	newUser.VerificationCode = verification_code
+	ac.DB.Save(newUser)
+
+	// 👇 Send Email
+	var firstName = newUser.Name
+
+	if strings.Contains(firstName, " ") {
+		firstName = strings.Split(firstName, " ")[1]
 	}
-	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": gin.H{"user": userResponse}})
+	emailData := utils.EmailData{
+		URL:       config.ClientOrigin + "/verifyemail/" + code,
+		FirstName: firstName,
+		Subject:   "Your account verification code",
+	}
+
+	var message string
+	err = utils.SendEmail(&newUser, &emailData)
+	if err != nil {
+		// Log the error
+		log.Printf("Failed to send email: %v", err)
+
+		// Optionally, you can choose to return an error response to the client
+		// ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Failed to send verification email"})
+		// return
+
+		message = "Account created, but we couldn't send the verification email. Please contact support."
+	} else {
+		message = "We sent an email with a verification code to " + newUser.Email
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": message})
 }
 
 // [...] Login User
@@ -90,6 +120,11 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	result := ac.DB.First(&user, "email = ?", strings.ToLower(payload.Email))
 	if result.Error != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Password"})
+		return
+	}
+
+	if !user.Verified {
+		ctx.JSON(http.StatusForbidden, gin.H{"status": "fail", "message": "Please verify your email"})
 		return
 	}
 
@@ -158,11 +193,36 @@ func (ac *AuthController) RefreshAccessToken(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": access_token})
 }
 
-// [...] Logout user
+// [...] Logout User
 func (ac *AuthController) LogoutUser(ctx *gin.Context) {
 	ctx.SetCookie("access_token", "", -1, "/", "localhost", false, true)
 	ctx.SetCookie("refresh_token", "", -1, "/", "localhost", false, true)
 	ctx.SetCookie("logged_in", "", -1, "/", "localhost", false, false)
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "Email verified successfully"})
+}
+
+// [...] Verify Email
+func (ac *AuthController) VerifyEmail(ctx *gin.Context) {
+
+	code := ctx.Params.ByName("verificationCode")
+	verification_code := utils.Encode(code)
+
+	var updatedUser models.User
+	result := ac.DB.First(&updatedUser, "verification_code = ?", verification_code)
+	if result.Error != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid verification code or user doesn't exists"})
+		return
+	}
+
+	if updatedUser.Verified {
+		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "User already verified"})
+		return
+	}
+
+	updatedUser.VerificationCode = ""
+	updatedUser.Verified = true
+	ac.DB.Save(&updatedUser)
+
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "Email verified successfully"})
 }
