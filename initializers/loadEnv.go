@@ -24,6 +24,9 @@ type Config struct {
 	RefreshTokenExpiresIn  time.Duration `mapstructure:"REFRESH_TOKEN_EXPIRED_IN"`
 	AccessTokenMaxAge      int           `mapstructure:"ACCESS_TOKEN_MAXAGE"`
 	RefreshTokenMaxAge     int           `mapstructure:"REFRESH_TOKEN_MAXAGE"`
+
+	EmailFrom    string `mapstructure:"EMAIL_FROM"`
+	SMTPApiToken string `mapstructure:"SMTP_API_TOKEN"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

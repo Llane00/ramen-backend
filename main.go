@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/Llane00/ramen-backend/controllers"
 	"github.com/Llane00/ramen-backend/initializers"
@@ -26,7 +27,11 @@ func init() {
 		log.Fatal("? Could not load environment variables", err)
 	}
 
-	initializers.ConnectDB(&config)
+	env := os.Getenv("GO_ENV")
+	if env == "" {
+		env = "development" // 默认环境
+	}
+	initializers.ConnectDB(&config, env)
 
 	AuthController = controllers.NewAuthController(initializers.DB)
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
@@ -40,7 +45,7 @@ func init() {
 func main() {
 	config, err := initializers.LoadConfig(".")
 	if err != nil {
-		log.Fatal("? Could not load environment variables", err)
+		log.Fatal("Could not load environment variables", err)
 	}
 
 	corsConfig := cors.DefaultConfig()
