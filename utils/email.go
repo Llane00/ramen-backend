@@ -58,7 +58,7 @@ func ParseTemplateDir(dir string) (*template.Template, error) {
 	return template.ParseFiles(paths...)
 }
 
-func SendEmail(user *models.User, data *EmailData) error {
+func SendEmail(user *models.User, data *EmailData, emailTemp string) error {
 	config, err := initializers.LoadConfig(".")
 
 	if err != nil {
@@ -77,7 +77,7 @@ func SendEmail(user *models.User, data *EmailData) error {
 		log.Fatal("Could not parse template", err)
 	}
 
-	template.ExecuteTemplate(&body, "verificationCode.html", &data)
+	template.ExecuteTemplate(&body, emailTemp, &data)
 
 	// 创建邮件请求
 	emailReq := EmailRequest{
