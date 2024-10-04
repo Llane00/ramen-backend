@@ -19,6 +19,9 @@ var (
 
 	UserController      controllers.UserController
 	UserRouteController routes.UserRouteController
+
+	PostController      controllers.PostController
+	PostRouteController routes.PostRouteController
 )
 
 func init() {
@@ -29,7 +32,7 @@ func init() {
 
 	env := os.Getenv("GO_ENV")
 	if env == "" {
-		env = "development" // 默认环境
+		env = "development" // default env
 	}
 	initializers.ConnectDB(&config, env)
 
@@ -38,6 +41,9 @@ func init() {
 
 	UserController = controllers.NewUserController(initializers.DB)
 	UserRouteController = routes.NewRouteUserController(UserController)
+
+	PostController = controllers.NewPostController(initializers.DB)
+	PostRouteController = routes.NewRoutePostController(PostController)
 
 	server = gin.Default()
 }
@@ -62,5 +68,6 @@ func main() {
 
 	AuthRouteController.AuthRoute(router)
 	UserRouteController.UserRoute(router)
+	PostRouteController.PostRoute(router)
 	log.Fatal(server.Run(":" + config.ServerPort))
 }
