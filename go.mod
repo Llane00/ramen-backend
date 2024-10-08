@@ -2,6 +2,8 @@ module github.com/Llane00/ramen-backend
 
 go 1.22.5
 
+require golang.org/x/oauth2 v0.23.0
+
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect

@@ -121,6 +121,11 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 		return
 	}
 
+	if user.Provider == "Google" {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": fmt.Sprintf("Use %v OAuth instead", user.Provider)})
+		return
+	}
+
 	if !user.Verified {
 		ctx.JSON(http.StatusForbidden, gin.H{"status": "fail", "message": "Please verify your email"})
 		return
@@ -307,4 +312,80 @@ func (ac *AuthController) ResetPassword(ctx *gin.Context) {
 	ctx.SetCookie("token", "", -1, "/", "localhost", false, true)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "Password data updated successfully"})
+}
+
+func (ac *AuthController) GoogleOAuth(ctx *gin.Context) {
+	code := ctx.Query("code")
+	log.Printf("Received authorization code: %s", code)
+	var pathUrl string = "/"
+
+	if ctx.Query("state") != "" {
+		pathUrl = ctx.Query("state")
+	}
+
+	if code == "" {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Authorization code not provided!"})
+		return
+	}
+
+	tokenRes, err := utils.GetGoogleOauthToken(code)
+	if err != nil {
+		log.Printf("Failed to exchange token: %v", err)
+		errorMessage := "Failed to get Google OAuth token"
+		if err != nil {
+			errorMessage += ": " + err.Error()
+		}
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": errorMessage})
+		return
+	}
+
+	google_user, err := utils.GetGoogleUser(tokenRes.Access_token, tokenRes.Id_token)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	now := time.Now()
+	email := strings.ToLower(google_user.Email)
+
+	user_data := models.User{
+		Name:      google_user.Name,
+		Email:     email,
+		Password:  "",
+		Role:      "user",
+		Verified:  true,
+		Photo:     google_user.Picture,
+		Provider:  "Google",
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	if initializers.DB.Model(&user_data).Where("email = ?", email).Updates(&user_data).RowsAffected == 0 {
+		initializers.DB.Create(&user_data)
+	}
+
+	var user models.User
+	initializers.DB.First(&user, "email = ?", email)
+
+	config, _ := initializers.LoadConfig(".")
+
+	// Generate Tokens
+	access_token, err := utils.CreateToken(config.AccessTokenExpiresIn, user.ID, config.AccessTokenPrivateKey)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	refresh_token, err := utils.CreateToken(config.RefreshTokenExpiresIn, user.ID, config.RefreshTokenPrivateKey)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	ctx.SetCookie("access_token", access_token, config.AccessTokenMaxAge*60, "/", "localhost", false, true)
+	ctx.SetCookie("refresh_token", refresh_token, config.RefreshTokenMaxAge*60, "/", "localhost", false, true)
+	ctx.SetCookie("logged_in", "true", config.AccessTokenMaxAge*60, "/", "localhost", false, false)
+
+	ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprint(config.ClientOrigin, pathUrl))
 }

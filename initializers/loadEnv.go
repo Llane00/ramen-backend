@@ -27,6 +27,10 @@ type Config struct {
 
 	EmailFrom    string `mapstructure:"EMAIL_FROM"`
 	SMTPApiToken string `mapstructure:"SMTP_API_TOKEN"`
+
+	GoogleClientID         string `mapstructure:"GOOGLE_OAUTH_CLIENT_ID"`
+	GoogleClientSecret     string `mapstructure:"GOOGLE_OAUTH_CLIENT_SECRET"`
+	GoogleOAuthRedirectUrl string `mapstructure:"GOOGLE_OAUTH_REDIRECT_URL"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

@@ -23,4 +23,5 @@ func (rc *AuthRouteController) AuthRoute(rg *gin.RouterGroup) {
 	router.GET("/verifyemail/:verificationCode", rc.authController.VerifyEmail)
 	router.POST("/forgotpassword", rc.authController.ForgotPassword)
 	router.PATCH("/resetpassword/:resetToken", rc.authController.ResetPassword)
+	router.GET("/oauth/google", rc.authController.GoogleOAuth)
 }
