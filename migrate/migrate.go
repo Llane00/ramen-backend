@@ -25,6 +25,14 @@ func init() {
 
 func main() {
 	fmt.Println("GO_ENV:", os.Getenv("GO_ENV"))
-	initializers.DB.AutoMigrate(&models.User{}, &models.Post{})
+	initializers.DB.AutoMigrate(
+		&models.User{},
+		&models.Post{},
+		&models.Shop{},
+		&models.Product{},
+		&models.Order{},
+		&models.OrderItem{},
+		&models.Payment{},
+	)
 	fmt.Println("✅ Migration complete")
 }
