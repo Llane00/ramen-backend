@@ -10,6 +10,8 @@ type Shop struct {
 	Description string    `gorm:"type:text"`
 	OwnerID     uuid.UUID `gorm:"type:uuid;not null"`
 	Owner       User      `gorm:"foreignKey:OwnerID"`
+	Products    []Product `gorm:"foreignKey:ShopID"`
+	Orders      []Order   `gorm:"foreignKey:ShopID"`
 }
 
 type Product struct {
@@ -22,14 +24,27 @@ type Product struct {
 	Shop        Shop      `gorm:"foreignKey:ShopID"`
 }
 
+type OrderStatus string
+
+const (
+	OrderStatusPending   OrderStatus = "pending"
+	OrderStatusPaid      OrderStatus = "paid"
+	OrderStatusShipping  OrderStatus = "shipping"
+	OrderStatusDelivered OrderStatus = "delivered"
+	OrderStatusCompleted OrderStatus = "completed"
+	OrderStatusCancelled OrderStatus = "cancelled"
+)
+
 type Order struct {
 	Base
-	UserID     uuid.UUID `gorm:"type:uuid;not null"`
-	User       User      `gorm:"foreignKey:UserID"`
-	ShopID     uuid.UUID `gorm:"type:uuid;not null"`
-	Shop       Shop      `gorm:"foreignKey:ShopID"`
-	TotalPrice int64     `gorm:"type:bigint;not null"` // Total price in cents
-	Status     string    `gorm:"type:varchar(50);not null"`
+	UserID     uuid.UUID   `gorm:"type:uuid;not null"`
+	User       User        `gorm:"foreignKey:UserID"`
+	ShopID     uuid.UUID   `gorm:"type:uuid;not null"`
+	Shop       Shop        `gorm:"foreignKey:ShopID"`
+	TotalPrice int64       `gorm:"type:bigint;not null"` // Total price in cents
+	Status     OrderStatus `gorm:"type:varchar(50);not null"`
+	Items      []OrderItem `gorm:"foreignKey:OrderID"`
+	Payment    Payment     `gorm:"foreignKey:OrderID"`
 }
 
 type OrderItem struct {
@@ -47,9 +62,7 @@ type OrderItem struct {
 type Payment struct {
 	Base
 	OrderID       uuid.UUID `gorm:"type:uuid;not null"`
-	Order         Order     `gorm:"foreignKey:OrderID"`
-	UserID        uuid.UUID `gorm:"type:uuid;not null"`
-	User          User      `gorm:"foreignKey:UserID"`
+	Order         *Order    `gorm:"foreignKey:OrderID"`
 	Amount        int64     `gorm:"type:bigint;not null"` // Amount in cents
 	PaymentMethod string    `gorm:"type:varchar(50);not null"`
 	Status        string    `gorm:"type:varchar(50);not null"`

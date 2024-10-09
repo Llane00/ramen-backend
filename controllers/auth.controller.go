@@ -70,7 +70,7 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 	verification_code := utils.Encode(code)
 
 	// Update user with verification code
-	result = ac.DB.Model(&newUser).Update("verification_code", verification_code)
+	ac.DB.Model(&newUser).Update("verification_code", verification_code)
 
 	// 👇 Send Email
 	var firstName = newUser.Name

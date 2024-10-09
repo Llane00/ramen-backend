@@ -84,7 +84,9 @@ type User struct {
 	VerificationCode   string
 	PasswordResetToken string
 	PasswordResetAt    time.Time
-	Verified           bool `gorm:"not null"`
+	Verified           bool    `gorm:"not null"`
+	Shops              []Shop  `gorm:"foreignKey:OwnerID"`
+	Orders             []Order `gorm:"foreignKey:UserID"`
 }
 
 type SignUpInput struct {
