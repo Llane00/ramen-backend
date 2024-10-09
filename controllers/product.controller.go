@@ -25,7 +25,7 @@ func (pc *ProductController) CreateProduct(ctx *gin.Context) {
 		return
 	}
 
-	shopID, err := uuid.Parse(ctx.Param("shopId"))
+	shopUUID, err := uuid.Parse(ctx.Param("shopId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid shop ID"})
 		return
@@ -36,7 +36,7 @@ func (pc *ProductController) CreateProduct(ctx *gin.Context) {
 		Description: input.Description,
 		Price:       input.Price,
 		Stock:       input.Stock,
-		ShopID:      shopID,
+		ShopID:      shopUUID,
 	}
 
 	if err := pc.DB.Create(&product).Error; err != nil {
@@ -47,16 +47,16 @@ func (pc *ProductController) CreateProduct(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{"data": product})
 }
 
-// GetProduct retrieves a product by its ID
+// GetProduct retrieves a specific product
 func (pc *ProductController) GetProduct(ctx *gin.Context) {
-	productID, err := uuid.Parse(ctx.Param("id"))
+	productId, err := uuid.Parse(ctx.Param("productId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product ID"})
 		return
 	}
 
 	var product models.Product
-	if err := pc.DB.First(&product, productID).Error; err != nil {
+	if err := pc.DB.First(&product, productId).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 		return
 	}
@@ -66,14 +66,14 @@ func (pc *ProductController) GetProduct(ctx *gin.Context) {
 
 // UpdateProduct updates a product
 func (pc *ProductController) UpdateProduct(ctx *gin.Context) {
-	productID, err := uuid.Parse(ctx.Param("id"))
+	productId, err := uuid.Parse(ctx.Param("productId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product ID"})
 		return
 	}
 
 	var product models.Product
-	if err := pc.DB.First(&product, productID).Error; err != nil {
+	if err := pc.DB.First(&product, productId).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 		return
 	}
@@ -91,13 +91,13 @@ func (pc *ProductController) UpdateProduct(ctx *gin.Context) {
 
 // DeleteProduct deletes a product
 func (pc *ProductController) DeleteProduct(ctx *gin.Context) {
-	productID, err := uuid.Parse(ctx.Param("id"))
+	productId, err := uuid.Parse(ctx.Param("productId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product ID"})
 		return
 	}
 
-	if err := pc.DB.Delete(&models.Product{}, productID).Error; err != nil {
+	if err := pc.DB.Delete(&models.Product{}, productId).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete product"})
 		return
 	}
@@ -107,14 +107,14 @@ func (pc *ProductController) DeleteProduct(ctx *gin.Context) {
 
 // ListProducts lists all products for a shop
 func (pc *ProductController) ListProducts(ctx *gin.Context) {
-	shopID, err := uuid.Parse(ctx.Param("shopId"))
+	shopId, err := uuid.Parse(ctx.Param("shopId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid shop ID"})
 		return
 	}
 
 	var products []models.Product
-	if err := pc.DB.Where("shop_id = ?", shopID).Find(&products).Error; err != nil {
+	if err := pc.DB.Where("shop_id = ?", shopId).Find(&products).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list products"})
 		return
 	}
@@ -124,7 +124,7 @@ func (pc *ProductController) ListProducts(ctx *gin.Context) {
 
 // UpdateProductStock updates the stock of a product
 func (pc *ProductController) UpdateProductStock(ctx *gin.Context) {
-	productID, err := uuid.Parse(ctx.Param("id"))
+	productId, err := uuid.Parse(ctx.Param("productId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product ID"})
 		return
@@ -139,7 +139,7 @@ func (pc *ProductController) UpdateProductStock(ctx *gin.Context) {
 	}
 
 	var product models.Product
-	if err := pc.DB.First(&product, productID).Error; err != nil {
+	if err := pc.DB.First(&product, productId).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 		return
 	}

@@ -20,8 +20,8 @@ func (pc *ProductRouteController) ProductRoute(rg *gin.RouterGroup) {
 
 	router.POST("/", pc.productController.CreateProduct)
 	router.GET("/", pc.productController.ListProducts)
-	router.GET("/:id", pc.productController.GetProduct)
-	router.PUT("/:id", pc.productController.UpdateProduct)
-	router.DELETE("/:id", pc.productController.DeleteProduct)
-	router.PATCH("/:id/stock", pc.productController.UpdateProductStock)
+	router.GET("/:productId", pc.productController.GetProduct)
+	router.PUT("/:productId", pc.productController.UpdateProduct)
+	router.DELETE("/:productId", pc.productController.DeleteProduct)
+	router.PATCH("/:productId/stock", pc.productController.UpdateProductStock)
 }

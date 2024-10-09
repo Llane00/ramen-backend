@@ -17,10 +17,9 @@ func NewOrderRouteController(orderController controllers.OrderController) OrderR
 func (oc *OrderRouteController) OrderRoute(rg *gin.RouterGroup) {
 	router := rg.Group("/shops/:shopId/orders")
 	router.Use(middleware.DeserializeUser())
-
 	router.POST("/", oc.orderController.CreateOrder)
 	router.GET("/", oc.orderController.ListOrders)
-	router.GET("/:id", oc.orderController.GetOrder)
-	router.PATCH("/:id/status", oc.orderController.UpdateOrderStatus)
-	router.GET("/:id/payments", oc.orderController.GetOrderPayments)
+	router.GET("/:orderId", oc.orderController.GetOrder)
+	router.PATCH("/:orderId/status", oc.orderController.UpdateOrderStatus)
+	router.GET("/:orderId/payments", oc.orderController.GetOrderPayments)
 }

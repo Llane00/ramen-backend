@@ -48,14 +48,14 @@ func (sc *ShopController) CreateShop(ctx *gin.Context) {
 
 // GetShop retrieves a shop by its ID
 func (sc *ShopController) GetShop(ctx *gin.Context) {
-	shopID, err := uuid.Parse(ctx.Param("id"))
+	shopId, err := uuid.Parse(ctx.Param("shopId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid shop ID"})
 		return
 	}
 
 	var shop models.Shop
-	if err := sc.DB.First(&shop, shopID).Error; err != nil {
+	if err := sc.DB.First(&shop, shopId).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Shop not found"})
 		return
 	}
@@ -65,14 +65,14 @@ func (sc *ShopController) GetShop(ctx *gin.Context) {
 
 // UpdateShop updates a shop
 func (sc *ShopController) UpdateShop(ctx *gin.Context) {
-	shopID, err := uuid.Parse(ctx.Param("id"))
+	shopId, err := uuid.Parse(ctx.Param("shopId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid shop ID"})
 		return
 	}
 
 	var shop models.Shop
-	if err := sc.DB.First(&shop, shopID).Error; err != nil {
+	if err := sc.DB.First(&shop, shopId).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Shop not found"})
 		return
 	}
@@ -90,13 +90,13 @@ func (sc *ShopController) UpdateShop(ctx *gin.Context) {
 
 // DeleteShop deletes a shop
 func (sc *ShopController) DeleteShop(ctx *gin.Context) {
-	shopID, err := uuid.Parse(ctx.Param("id"))
+	shopId, err := uuid.Parse(ctx.Param("shopId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid shop ID"})
 		return
 	}
 
-	if err := sc.DB.Delete(&models.Shop{}, shopID).Error; err != nil {
+	if err := sc.DB.Delete(&models.Shop{}, shopId).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete shop"})
 		return
 	}
@@ -117,14 +117,14 @@ func (sc *ShopController) ListShops(ctx *gin.Context) {
 
 // GetShopProducts retrieves all products for a specific shop
 func (sc *ShopController) GetShopProducts(ctx *gin.Context) {
-	shopID, err := uuid.Parse(ctx.Param("id"))
+	shopId, err := uuid.Parse(ctx.Param("shopId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid shop ID"})
 		return
 	}
 
 	var products []models.Product
-	if err := sc.DB.Where("shop_id = ?", shopID).Find(&products).Error; err != nil {
+	if err := sc.DB.Where("shop_id = ?", shopId).Find(&products).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve shop products"})
 		return
 	}
@@ -134,14 +134,14 @@ func (sc *ShopController) GetShopProducts(ctx *gin.Context) {
 
 // GetShopOrders retrieves all orders for a specific shop
 func (sc *ShopController) GetShopOrders(ctx *gin.Context) {
-	shopID, err := uuid.Parse(ctx.Param("id"))
+	shopId, err := uuid.Parse(ctx.Param("shopId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid shop ID"})
 		return
 	}
 
 	var orders []models.Order
-	if err := sc.DB.Where("shop_id = ?", shopID).Find(&orders).Error; err != nil {
+	if err := sc.DB.Where("shop_id = ?", shopId).Find(&orders).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve shop orders"})
 		return
 	}

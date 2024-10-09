@@ -32,7 +32,7 @@ func (oc *OrderController) CreateOrder(ctx *gin.Context) {
 	}
 	currentUser := user.(models.User)
 
-	shopID, err := uuid.Parse(ctx.Param("shopId"))
+	shopId, err := uuid.Parse(ctx.Param("shopId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid shop ID"})
 		return
@@ -40,7 +40,7 @@ func (oc *OrderController) CreateOrder(ctx *gin.Context) {
 
 	order := models.Order{
 		UserID:     currentUser.ID,
-		ShopID:     shopID,
+		ShopID:     shopId,
 		TotalPrice: input.TotalPrice,
 		Status:     models.OrderStatusPending,
 	}
@@ -55,14 +55,14 @@ func (oc *OrderController) CreateOrder(ctx *gin.Context) {
 
 // GetOrder retrieves an order by its ID
 func (oc *OrderController) GetOrder(ctx *gin.Context) {
-	orderID, err := uuid.Parse(ctx.Param("id"))
+	orderId, err := uuid.Parse(ctx.Param("orderId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid order ID"})
 		return
 	}
 
 	var order models.Order
-	if err := oc.DB.Preload("Items").First(&order, orderID).Error; err != nil {
+	if err := oc.DB.Preload("Items").First(&order, orderId).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
 		return
 	}
@@ -72,7 +72,7 @@ func (oc *OrderController) GetOrder(ctx *gin.Context) {
 
 // UpdateOrderStatus updates the status of an order
 func (oc *OrderController) UpdateOrderStatus(ctx *gin.Context) {
-	orderID, err := uuid.Parse(ctx.Param("id"))
+	orderId, err := uuid.Parse(ctx.Param("orderId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid order ID"})
 		return
@@ -85,7 +85,7 @@ func (oc *OrderController) UpdateOrderStatus(ctx *gin.Context) {
 	}
 
 	var order models.Order
-	if err := oc.DB.First(&order, orderID).Error; err != nil {
+	if err := oc.DB.First(&order, orderId).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
 		return
 	}
@@ -101,14 +101,14 @@ func (oc *OrderController) UpdateOrderStatus(ctx *gin.Context) {
 
 // ListOrders lists all orders for a shop
 func (oc *OrderController) ListOrders(ctx *gin.Context) {
-	shopID, err := uuid.Parse(ctx.Param("shopId"))
+	shopId, err := uuid.Parse(ctx.Param("shopId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid shop ID"})
 		return
 	}
 
 	var orders []models.Order
-	if err := oc.DB.Where("shop_id = ?", shopID).Find(&orders).Error; err != nil {
+	if err := oc.DB.Where("shop_id = ?", shopId).Find(&orders).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list orders"})
 		return
 	}
@@ -118,14 +118,14 @@ func (oc *OrderController) ListOrders(ctx *gin.Context) {
 
 // GetOrderPayments retrieves all payments for a specific order
 func (oc *OrderController) GetOrderPayments(ctx *gin.Context) {
-	orderID, err := uuid.Parse(ctx.Param("id"))
+	orderId, err := uuid.Parse(ctx.Param("orderId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid order ID"})
 		return
 	}
 
 	var payments []models.Payment
-	if err := oc.DB.Where("order_id = ?", orderID).Find(&payments).Error; err != nil {
+	if err := oc.DB.Where("order_id = ?", orderId).Find(&payments).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve order payments"})
 		return
 	}

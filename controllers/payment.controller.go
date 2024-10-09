@@ -25,20 +25,20 @@ func (pc *PaymentController) CreatePayment(ctx *gin.Context) {
 		return
 	}
 
-	orderID, err := uuid.Parse(ctx.Param("orderId"))
+	orderId, err := uuid.Parse(ctx.Param("orderId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid order ID"})
 		return
 	}
 
 	var order models.Order
-	if err := pc.DB.First(&order, orderID).Error; err != nil {
+	if err := pc.DB.First(&order, orderId).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
 		return
 	}
 
 	payment := models.Payment{
-		OrderID:       orderID,
+		OrderID:       orderId,
 		Amount:        input.Amount,
 		PaymentMethod: input.PaymentMethod,
 		Status:        models.PaymentStatusPending,
@@ -102,14 +102,14 @@ func (pc *PaymentController) UpdatePaymentStatus(ctx *gin.Context) {
 
 // ListPayments lists all payments for an order
 func (pc *PaymentController) ListPayments(ctx *gin.Context) {
-	orderID, err := uuid.Parse(ctx.Param("orderId"))
+	orderId, err := uuid.Parse(ctx.Param("orderId"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid order ID"})
 		return
 	}
 
 	var payments []models.Payment
-	if err := pc.DB.Where("order_id = ?", orderID).Find(&payments).Error; err != nil {
+	if err := pc.DB.Where("order_id = ?", orderId).Find(&payments).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list payments"})
 		return
 	}

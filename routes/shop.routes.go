@@ -20,9 +20,9 @@ func (sc *ShopRouteController) ShopRoute(rg *gin.RouterGroup) {
 
 	router.POST("/", sc.shopController.CreateShop)
 	router.GET("/", sc.shopController.ListShops)
-	router.GET("/:id", sc.shopController.GetShop)
-	router.PUT("/:id", sc.shopController.UpdateShop)
-	router.DELETE("/:id", sc.shopController.DeleteShop)
-	router.GET("/:id/products", sc.shopController.GetShopProducts)
-	router.GET("/:id/orders", sc.shopController.GetShopOrders)
+	router.GET("/:shopId", sc.shopController.GetShop)
+	router.PUT("/:shopId", sc.shopController.UpdateShop)
+	router.DELETE("/:shopId", sc.shopController.DeleteShop)
+	router.GET("/:shopId/products", sc.shopController.GetShopProducts)
+	router.GET("/:shopId/orders", sc.shopController.GetShopOrders)
 }
