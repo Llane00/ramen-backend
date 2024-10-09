@@ -42,17 +42,14 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		return
 	}
 
-	now := time.Now()
 	newUser := models.User{
-		Name:      payload.Name,
-		Email:     strings.ToLower(payload.Email),
-		Password:  hashedPassword,
-		Role:      "user",
-		Verified:  false,
-		Photo:     payload.Photo,
-		Provider:  "local",
-		CreatedAt: now,
-		UpdatedAt: now,
+		Name:     payload.Name,
+		Email:    strings.ToLower(payload.Email),
+		Password: hashedPassword,
+		Roles:    models.UserRoles{models.RoleUser},
+		Verified: false,
+		Photo:    payload.Photo,
+		Provider: "local",
 	}
 
 	result := ac.DB.Create(&newUser)
@@ -61,7 +58,7 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "User with that email already exists"})
 		return
 	} else if result.Error != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": "Something bad happened"})
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": "Some Error happened"})
 		return
 	}
 
@@ -72,9 +69,8 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 
 	verification_code := utils.Encode(code)
 
-	// Update User in Database
-	newUser.VerificationCode = verification_code
-	ac.DB.Save(newUser)
+	// Update user with verification code
+	result = ac.DB.Model(&newUser).Update("verification_code", verification_code)
 
 	// 👇 Send Email
 	var firstName = newUser.Name
@@ -332,9 +328,7 @@ func (ac *AuthController) GoogleOAuth(ctx *gin.Context) {
 	if err != nil {
 		log.Printf("Failed to exchange token: %v", err)
 		errorMessage := "Failed to get Google OAuth token"
-		if err != nil {
-			errorMessage += ": " + err.Error()
-		}
+		errorMessage += ": " + err.Error()
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": errorMessage})
 		return
 	}
@@ -346,19 +340,16 @@ func (ac *AuthController) GoogleOAuth(ctx *gin.Context) {
 		return
 	}
 
-	now := time.Now()
 	email := strings.ToLower(google_user.Email)
 
 	user_data := models.User{
-		Name:      google_user.Name,
-		Email:     email,
-		Password:  "",
-		Role:      "user",
-		Verified:  true,
-		Photo:     google_user.Picture,
-		Provider:  "Google",
-		CreatedAt: now,
-		UpdatedAt: now,
+		Name:     google_user.Name,
+		Email:    email,
+		Password: "",
+		Roles:    models.UserRoles{models.RoleUser},
+		Verified: true,
+		Photo:    google_user.Picture,
+		Provider: "Google",
 	}
 
 	if initializers.DB.Model(&user_data).Where("email = ?", email).Updates(&user_data).RowsAffected == 0 {

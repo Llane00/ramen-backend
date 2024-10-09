@@ -79,7 +79,7 @@ func SendEmail(user *models.User, data *EmailData, emailTemp string) error {
 
 	template.ExecuteTemplate(&body, emailTemp, &data)
 
-	// 创建邮件请求
+	// Create email request
 	emailReq := EmailRequest{
 		From: struct {
 			Email string `json:"email"`
@@ -102,23 +102,23 @@ func SendEmail(user *models.User, data *EmailData, emailTemp string) error {
 		HTML:    body.String(),
 	}
 
-	// 将请求转换为JSON
+	// Convert request to JSON
 	jsonData, err := json.Marshal(emailReq)
 	if err != nil {
 		log.Fatal("Error marshalling JSON:", err)
 	}
 
-	// 创建HTTP请求
+	// Create HTTP request
 	req, err := http.NewRequest("POST", MailtrapTestApiUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Fatal("Error creating request:", err)
 	}
 
-	// 设置请求头
+	// Set request headers
 	req.Header.Add("Authorization", "Bearer"+" "+apiToken)
 	req.Header.Add("Content-Type", "application/json")
 
-	// 发送请求
+	// Send request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -126,13 +126,13 @@ func SendEmail(user *models.User, data *EmailData, emailTemp string) error {
 	}
 	defer resp.Body.Close()
 
-	// 读取响应
+	// Read response
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("error reading response: %w", err)
 	}
 
-	// 检查响应状态
+	// Check response status
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to send email. Status: %s, Response: %s", resp.Status, string(respBody))
 	}
