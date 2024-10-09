@@ -21,6 +21,43 @@
 go.work
 go.work.sum
 
-# env file
+# Environment variables file
 .env
 app.env
+
+# Temporary files and directories
+/tmp/
+*.tmp
+*.temp
+
+# IDE-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Build output
+/build/
+/dist/
+
+# Debug files
+debug
+
+# Air temporary files (if you're using Air for live reloading)
+tmp/
+
+# Database files (if applicable)
+*.db
+*.sqlite
+
+# Binary file (assuming your Go binary is named 'ramen-backend')
+/ramen-backend
+
+# Any other project-specific files or directories you want to ignore
