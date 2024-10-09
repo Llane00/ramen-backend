@@ -22,6 +22,18 @@ var (
 
 	PostController      controllers.PostController
 	PostRouteController routes.PostRouteController
+
+	ShopController      controllers.ShopController
+	ShopRouteController routes.ShopRouteController
+
+	ProductController      controllers.ProductController
+	ProductRouteController routes.ProductRouteController
+
+	OrderController      controllers.OrderController
+	OrderRouteController routes.OrderRouteController
+
+	PaymentController      controllers.PaymentController
+	PaymentRouteController routes.PaymentRouteController
 )
 
 func init() {
@@ -44,6 +56,18 @@ func init() {
 
 	PostController = controllers.NewPostController(initializers.DB)
 	PostRouteController = routes.NewRoutePostController(PostController)
+
+	ShopController = controllers.NewShopController(initializers.DB)
+	ShopRouteController = routes.NewShopRouteController(ShopController)
+
+	ProductController = controllers.NewProductController(initializers.DB)
+	ProductRouteController = routes.NewProductRouteController(ProductController)
+
+	OrderController = controllers.NewOrderController(initializers.DB)
+	OrderRouteController = routes.NewOrderRouteController(OrderController)
+
+	PaymentController = controllers.NewPaymentController(initializers.DB)
+	PaymentRouteController = routes.NewPaymentRouteController(PaymentController)
 
 	server = gin.Default()
 }
@@ -69,5 +93,9 @@ func main() {
 	AuthRouteController.AuthRoute(router)
 	UserRouteController.UserRoute(router)
 	PostRouteController.PostRoute(router)
+	ShopRouteController.ShopRoute(router)
+	ProductRouteController.ProductRoute(router)
+	OrderRouteController.OrderRoute(router)
+	PaymentRouteController.PaymentRoute(router)
 	log.Fatal(server.Run(":" + config.ServerPort))
 }
